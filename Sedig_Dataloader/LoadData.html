@@ -1,0 +1,259 @@
+<!--Commented by Alexander Sedig-->
+
+<!DOCTYPE html>
+<html lang="en" style="font-family:fantasy">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>UAT Space Program</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="code.js"></script>
+    <script src="dataLoader.js"></script>
+</head>
+
+<body>
+    <!--defines the layout of the top of the page as a paragraph with a table containing
+    a row with two cells in it. One cell for an image, the other is a header with text. -->
+    <p class="top">
+        <table class="table1">
+            <tr>
+                <td>
+                    <img src="images/image001B.png" />
+                </td>
+                <td>
+                    <h1>UAT Space Program</h1>
+                </td>
+            </tr>
+        </table>
+    </p>
+    <!--This is the start of the data area,-->
+    <table id="data" border="2" width="70%" class="table2">
+        <!--define the look of columns in table.
+        Width is a percentage so it resizes with the screen.-->
+        <col style="width:35%">
+        <col style="width:35%">
+        <!--This is the head of data area, with two side by rows containing a single cell-->
+        <thead>
+            <tr style="font-family:fantasy">
+                <th align="left">Data Type</th>
+                <th align="left">Reading</th>
+            </tr>
+        </thead>
+        <!--This is the body of the data area.
+        It contains many empty rows and defines ids to reference them by.
+        When data is loaded two cells will be created within each row,
+        and data values will be displayed in those cells.-->
+        <tbody>
+            <tr id="seconds"></tr>
+            <tr id=latitude></tr>
+            <tr id=longitude></tr>
+            <tr id=gps_altitude></tr>
+            <tr id=bmpSensor_altitude></tr>
+            <tr id=bmpSensor_pressure></tr>
+            <tr id=bmpSensor_temp></tr>
+            <tr id=digSensor_temp></tr>
+            <tr id=cssSensor_temp></tr>
+            <tr id=cssSensor_eCO2></tr>
+            <tr id=cssSensor_TVOC></tr>
+            <tr id=UV></tr>
+            <tr id=accelX></tr>
+            <tr id=accelY></tr>
+            <tr id=accelZ></tr>
+            <tr id=magneticX></tr>
+            <tr id=magneticY></tr>
+            <tr id=magneticZ></tr>
+            <tr id=gyroX></tr>
+            <tr id=gyroY></tr>
+            <tr id=gyroZ></tr>
+            
+        </tbody>
+    </table>
+    <!--Linebreak to make sure the following elements arent placed beside data area.-->
+    <br>
+    <!--Two buttons which call functions to stop and start the data loader.-->
+    <p>
+        <INPUT id="startButton" type="button" value="Start" onclick="start();" class="button" />
+        <INPUT id="stopButton" type="button" value="Stop" onclick="stop();" disabled=true class="button" />
+    </p>
+    <br><br>
+    <!--Create a table at the bottom of the screen to display the current time.-->
+    <table class="table3">
+        <thead>
+            <!--This row is the text, it doesnt change-->
+            <tr>
+                <th>The time is :</th>
+            </tr>
+        </thead>
+        <tbody align="center">
+            <!--This row is the clock value. Its left blank but given an id to reference and update a value later-->
+            <tr id="time">
+                
+            </tr>
+        </tbody>
+    </table>
+</body>
+
+<!--This is the start of a script, javascript can be used in an html document
+    within the <script> tags </script>-->
+<script>
+    // Global variables
+    //this variable will store the date, will need to continually update this as new date to keep
+    //the time present. 
+    var theTime = new Date();
+    //var tempTime = new Date; //might be useful for future functionality, but doesnt currently do anything.
+    //Interval at which the update display function will repeat.
+    var time_interval = 5000;
+    //var last_iteration = 0; //might be useful for future functionality, but doesnt currently do anything.
+    var running = true;
+    //used to iterate through the array index, start it at 0. 
+    var index = 0;
+    //the timer is used to store the updateDisplay interval. 
+    var timer;
+
+    // Load our data into our array
+    var data = getData();
+
+    /***************************************************************************************
+     * Functions
+     ****************************************************************************************/
+    //Update display is called on start and given an interval to loop at.
+    function updateDisplay() 
+    {
+        //create a new date constructor eachtime updatedisplay is called, set the value at the end of the function.
+        theTime = new Date();
+       
+        // Debugging. This will display in the console. 
+        console.log
+        (
+            "Display : " +
+            (theTime.getHours() < 10 ? "0" + theTime.getHours() : theTime.getHours()) +
+            ":" + (theTime.getMinutes() < 10 ? "0" + theTime.getMinutes() : theTime.getMinutes()) +
+            ":" + (theTime.getSeconds() < 10 ? "0" + theTime.getSeconds() : theTime.getSeconds())
+        );
+
+        // Now update the document
+        var timeRead = data[index].time_seconds;
+        //the value returned within the data array that corresponds to Time_seconds
+        //increases by 5 each time you move up the array index for a total of 2510 seconds. 
+        //time is kept track of by the current index value used for the table. 
+        //The index increases by 1 each time this function is called. 
+
+        //timeRead Starts at 10 when the index value is 0, and increases from there. 
+        if (timeRead >= 10) 
+        {
+        //*get the table with the data id. *Get the id of the row. Set the innerhtml to display the value given by the datarow function.
+        //the datarow function will take in the string "Time elapsed" as well as the value within the data array for this index-
+        //and return them in an html format to construct the rows in the table.   
+            document.getElementById("data").rows["seconds"].innerHTML = dataRow("Time elapsed", data[index]
+            .time_seconds, "seconds");
+        //This repeats for each row in the table. 
+            document.getElementById("data").rows["latitude"].innerHTML = dataRow("Latitude", data[index].latitude, " ");
+            document.getElementById("data").rows["longitude"].innerHTML = dataRow("Longltude", data[index].longitude,
+                " ");
+            document.getElementById("data").rows["gps_altitude"].innerHTML = dataRow("GPS Altitude", data[index]
+                .gps_altitude, " ");
+            document.getElementById("data").rows["bmpSensor_altitude"].innerHTML = dataRow("BMP Sensor Altitude", data[
+                index].bmpSensor_altitude, "");
+            document.getElementById("data").rows["bmpSensor_pressure"].innerHTML = dataRow("BMP Sensor Pressure", data[
+                index].bmpSensor_pressure, "");
+            document.getElementById("data").rows["bmpSensor_temp"].innerHTML = dataRow("BMP Sensor Temperature", data[
+                index].bmpSensor_temp, "");
+            document.getElementById("data").rows["digSensor_temp"].innerHTML = dataRow("Digital Sensor Temperature",
+                data[index].digSensor_temp, "");
+            document.getElementById("data").rows["cssSensor_temp"].innerHTML = dataRow("CSS Sensor Temperature", data[
+                index].cssSensor_temp, "");
+            document.getElementById("data").rows["cssSensor_eCO2"].innerHTML = dataRow("CSS Sensor eCO2", data[index]
+                .cssSensor_eCO2, "");
+            document.getElementById("data").rows["cssSensor_TVOC"].innerHTML = dataRow("CSS Sensor TVOC", data[index]
+                .cssSensor_TVOC, "");
+            document.getElementById("data").rows["UV"].innerHTML = dataRow("UV", data[index].UV, " ");
+            document.getElementById("data").rows["accelX"].innerHTML = dataRow("Accel X", data[index].accelX, " ");
+            document.getElementById("data").rows["accelY"].innerHTML = dataRow("Accel Y", data[index].accelY, " ");
+            document.getElementById("data").rows["accelZ"].innerHTML = dataRow("Accel Z", data[index].accelZ, " ");
+            document.getElementById("data").rows["magneticX"].innerHTML = dataRow("Magnetic X", data[index].magneticX,
+                " ");
+            document.getElementById("data").rows["magneticY"].innerHTML = dataRow("Magnetic Y", data[index].magneticY,
+                " ");
+            document.getElementById("data").rows["magneticZ"].innerHTML = dataRow("Magnetic Z", data[index].magneticZ,
+                " ");
+            document.getElementById("data").rows["gyroX"].innerHTML = dataRow("Gyro X", data[index].gyroX, " ");
+            document.getElementById("data").rows["gyroY"].innerHTML = dataRow("Gyro Y", data[index].gyroY, " ");
+            document.getElementById("data").rows["gyroZ"].innerHTML = dataRow("Gyro Z", data[index].gyroZ, " ");
+
+            //the arrays length is 501, as long as the index is less then that we should increase the index value-
+            //each time this function is called. 
+            if (index < 500) 
+            {
+                index++;
+            } 
+            //Otherwise If the array reaches its boundry, it should reset back to 0. 
+            else 
+            {
+                index = 0;
+            }
+        }
+             // get the element which stores the clock and use "getHour", "getMinutes", and "getSeconds" functions
+             //to fill in the values for the date constructor class (thetime).
+
+             document.getElementById("time").innerHTML = 
+            (theTime.getHours() < 10 ? "0" + theTime.getHours() : theTime.getHours()) +
+            ":" + (theTime.getMinutes() < 10 ? "0" + theTime.getMinutes() : theTime.getMinutes()) +
+            ":" + (theTime.getSeconds() < 10 ? "0" + theTime.getSeconds() : theTime.getSeconds());
+    }
+
+    // Stop the timer
+    function stop() 
+    {
+        //clears the interval so the updatedisplay function is no longer called on an interval. 
+        clearInterval(timer);
+        //disable the stop button so you cant keep pressing it, and enable the start button so you can press it.
+        document.getElementById("startButton").disabled = false;
+        document.getElementById("stopButton").disabled = true;
+        
+            //Reset the value for each of the rows to display nothing
+            document.getElementById("data").rows["seconds"].innerHTML = "<tr></tr>";  
+        
+            document.getElementById("data").rows["latitude"].innerHTML = "<tr></tr>";
+            document.getElementById("data").rows["longitude"].innerHTML = "<tr></tr>"; 
+            document.getElementById("data").rows["gps_altitude"].innerHTML = "<tr></tr>";
+            document.getElementById("data").rows["bmpSensor_altitude"].innerHTML = "<tr></tr>";
+            document.getElementById("data").rows["bmpSensor_pressure"].innerHTML = "<tr></tr>";
+            document.getElementById("data").rows["bmpSensor_temp"].innerHTML = "<tr></tr>"; 
+            document.getElementById("data").rows["digSensor_temp"].innerHTML = "<tr></tr>"; 
+            document.getElementById("data").rows["cssSensor_temp"].innerHTML = "<tr></tr>";   
+            document.getElementById("data").rows["cssSensor_eCO2"].innerHTML = "<tr></tr>";
+            document.getElementById("data").rows["cssSensor_TVOC"].innerHTML = "<tr></tr>";  
+            document.getElementById("data").rows["UV"].innerHTML = "<tr></tr>";
+            document.getElementById("data").rows["accelX"].innerHTML = "<tr></tr>";
+            document.getElementById("data").rows["accelY"].innerHTML = "<tr></tr>";
+            document.getElementById("data").rows["accelZ"].innerHTML = "<tr></tr>";
+            document.getElementById("data").rows["magneticX"].innerHTML = "<tr></tr>";
+            document.getElementById("data").rows["magneticY"].innerHTML = "<tr></tr>";
+            document.getElementById("data").rows["magneticZ"].innerHTML = "<tr></tr>";
+            document.getElementById("data").rows["gyroX"].innerHTML = "<tr></tr>";
+            document.getElementById("data").rows["gyroY"].innerHTML = "<tr></tr>";
+            document.getElementById("data").rows["gyroZ"].innerHTML = "<tr></tr>"; 
+            //Reset the value for the clock to display nothing
+            document.getElementById("time").innerHTML = "<tr></tr>";
+            
+    }
+
+    // Start the timer
+    function start() 
+    {
+        //set the first row of the table to display "Reading data..." After 10 seconds this is replaced by the date table. 
+        document.getElementById("data").rows["seconds"].innerHTML = "Reading data...";
+        //set the index to 0 to make sure the data array starts from the beginning
+        index = 0;
+        //set updateDisplay to run on an interval of the time_interval value. 
+        timer = setInterval(updateDisplay, time_interval);
+        //disable the start button so you cant keep pressing it, and enable the stop button so you can press it.
+        document.getElementById("startButton").disabled = true;
+        document.getElementById("stopButton").disabled = false;
+    }
+</script>
+</head>
+
+</html>
